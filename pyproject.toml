@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 [project]
 # This is the name used for `pip install` (kebab-case is common)
 name = "image-panel-border-cleaner"
-version = "0.1.0"
+version = "0.1.1"
 authors = [
   { name="avan" },
 ]

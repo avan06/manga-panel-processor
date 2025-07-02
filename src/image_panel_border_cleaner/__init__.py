@@ -1,5 +1,11 @@
-# Define the package version so users can check it.
-__version__ = "0.1.1"
+import importlib.metadata
+
+try:
+    # This will read the version from the installed package's metadata
+    __version__ = importlib.metadata.version("image-panel-border-cleaner")
+except importlib.metadata.PackageNotFoundError:
+    # Fallback for when the package is not installed (e.g., running from source)
+    __version__ = "0.0.0-dev"
 
 # --- Proactive dependency check ---
 try:
