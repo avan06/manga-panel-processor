@@ -1,42 +1,69 @@
-# Image Panel Border Cleaner
+﻿# Manga Panel Processor
 
-A simple Python utility designed to automatically detect and remove the borders of comic book panels.
+A Python utility toolkit for processing comic or manga panels.
 
-This tool uses OpenCV's contour detection and image skeletonization (thinning) to accurately find the innermost border line, which is effective even when borders intersect with other elements like speech bubbles.
+This package provides two main features:
+
+1. **Panel Border Cleaner** – Removes borders from individual comic panels using image skeletonization.
+2. **Panel Sorter** – Automatically sorts multiple panels on a full comic page based on natural reading order (top-to-bottom, then left-to-right or right-to-left).
+
+---
 
 ## Features
 
--   Automatically removes the border from a single comic panel image.
--   Uses image skeletonization to accurately locate the innermost border line.
--   Allows customization of the border search zone and internal padding.
+- **Remove Borders**: Cleanly removes borders from individual comic panels using OpenCV and thinning algorithms.
+- **Sort Panels**: Automatically reorders multiple comic panels from a full page scan into the correct reading sequence.
+- Supports both **left-to-right (LTR)** and **right-to-left (RTL)** reading directions.
+- Robust vertical grouping logic with dynamic tolerance for complex layouts, including asymmetric and spanning panels.
+
+---
 
 ## Installation
 
-You can install this package directly from GitHub using pip:
+Install directly from GitHub:
 
 ```bash
-pip install git+https://github.com/avan06/image-panel-border-cleaner.git
+pip install git+https://github.com/avan06/manga-panel-processor.git
 ```
 
-This package depends on `numpy` and `opencv-contrib-python`, which will be installed automatically by pip.
+Dependencies such as `numpy` and `opencv-contrib-python` will be installed automatically.
+
+---
 
 ## Usage
 
-After installation, you can use it in your Python scripts as follows:
+### Remove Border from a Single Panel
 
 ```python
 import cv2
-from image_panel_border_cleaner import remove_border
+from manga_panel_processor import remove_border
 
-# Load your panel image
-panel_image = cv2.imread("path/to/your/panel.png")
-
-# Remove the border
-cleaned_panel = remove_border(panel_image)
-
-# Save or display the result
-cv2.imwrite("path/to/cleaned_panel.png", cleaned_panel)
+panel_image = cv2.imread("path/to/panel.png")
+cleaned = remove_border(panel_image)
+cv2.imwrite("cleaned.png", cleaned)
 ```
+
+---
+
+### Sort Panels on a Full Page
+
+```python
+import cv2
+from manga_panel_processor import sort_panels_by_column_then_row
+
+# Assume 'contours' is a list of bounding contours (from cv2.findContours)
+# or bounding boxes (x, y, w, h) for each panel
+contours = [...]  # extracted from page layout
+
+# Sort panels in right-to-left reading order (typical for Japanese manga)
+sorted_panels = sort_panels_by_column_then_row(contours, rtl_order=True)
+
+# Now 'sorted_panels' is ordered for reading: top-to-bottom, right-to-left
+```
+
+The sorting algorithm first splits panels into left and right columns based on horizontal gaps, sorts each column by top-to-bottom, and merges them according to the specified reading direction. Spanning panels (e.g. wide bottom panels) are inserted according to their vertical position.
+
+---
 
 ## License
 

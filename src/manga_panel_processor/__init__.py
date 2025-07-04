@@ -24,3 +24,4 @@ except (ImportError, AttributeError):
 # --- Export the main function ---
 # This line will only be reached if the check above passes.
 from .border import remove_border
+from .layout import sort_panels_by_column_then_row

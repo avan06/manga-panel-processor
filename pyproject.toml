@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 # This is the name used for `pip install` (kebab-case is common)
-name = "image-panel-border-cleaner"
-version = "0.1.1"
+name = "manga-panel-processor"
+version = "0.2.0"
 authors = [
   { name="avan" },
 ]
-description = "Removes borders using skeletonization and weighted projection analysis."
+description = "Tools for processing manga/comic panels: border removal and panel sorting."
 readme = "README.md"
 requires-python = ">=3.8"
 license = { file="LICENSE" }
@@ -21,6 +21,7 @@ classifiers = [
     "Topic :: Multimedia :: Graphics",
     "Intended Audience :: Developers",
 ]
+keywords = ["manga", "comics", "panel", "border", "opencv", "image processing", "sorting"]
 
 # This section is crucial: it defines your project's dependencies.
 # pip will automatically install these for the user.
@@ -30,5 +31,5 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/avan06/image-panel-border-cleaner"
-Issues = "https://github.com/avan06/image-panel-border-cleaner/issues"
+Homepage = "https://github.com/avan06/manga-panel-processor"
+Issues = "https://github.com/avan06/manga-panel-processor/issues"
