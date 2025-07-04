@@ -25,24 +25,27 @@ def sort_panels_by_column_then_row(items, rtl_order: bool) -> list:
         else:
             x, y, w, h = item
         max_x2 = max(max_x2, x + w)
-        data.append((item, x + w/2, y, x, y, w, h))
+        data.append((item, x + w / 2, y, x, y, w, h))
     full_width = max_x2
 
     # Step 2: separate spanning panels (width >= 60% of full page)
     spanning = [d for d in data if d[5] >= full_width * 0.6]
-    remaining = [d for d in data if d not in spanning]
     
-    # if too few non-spanning, treat all as non-spanning
+    # Use id() to avoid ambiguous ndarray comparison
+    spanning_ids = set(id(d[0]) for d in spanning)
+    remaining = [d for d in data if id(d[0]) not in spanning_ids]
+
+    # If too few non-spanning, treat all as non-spanning
     if len(remaining) < 2:
         remaining = data
         spanning = []
 
     # Step 3: find split_x using remaining panels
-    remaining.sort(key=lambda d: d[1])
+    remaining.sort(key=lambda d: d[1])  # sort by x_center
     x_centers = [d[1] for d in remaining]
-    gaps = [(x_centers[i+1] - x_centers[i], i) for i in range(len(x_centers)-1)]
+    gaps = [(x_centers[i + 1] - x_centers[i], i) for i in range(len(x_centers) - 1)]
     split_idx = max(gaps, key=lambda g: g[0])[1] if gaps else 0
-    split_x = (x_centers[split_idx] + x_centers[split_idx+1]) / 2
+    split_x = (x_centers[split_idx] + x_centers[split_idx + 1]) / 2
 
     # Step 4: divide remaining into left/right
     left_group = [d for d in remaining if d[1] < split_x]
@@ -54,7 +57,7 @@ def sort_panels_by_column_then_row(items, rtl_order: bool) -> list:
     # Step 6: sort non-spanning by column then y_top
     non_spanning = []
     for col in columns:
-        non_spanning.extend(sorted(col, key=lambda d: d[2]))
+        non_spanning.extend(sorted(col, key=lambda d: d[2]))  # sort by y_top
 
     # Step 7: sort spanning by y_top
     spanning_sorted = sorted(spanning, key=lambda d: d[2])
@@ -64,9 +67,11 @@ def sort_panels_by_column_then_row(items, rtl_order: bool) -> list:
     i = j = 0
     while i < len(non_spanning) and j < len(spanning_sorted):
         if spanning_sorted[j][2] < non_spanning[i][2]:
-            merged.append(spanning_sorted[j][0]); j += 1
+            merged.append(spanning_sorted[j][0])
+            j += 1
         else:
-            merged.append(non_spanning[i][0]); i += 1
+            merged.append(non_spanning[i][0])
+            i += 1
     # append leftovers
     merged.extend([d[0] for d in non_spanning[i:]])
     merged.extend([d[0] for d in spanning_sorted[j:]])
