@@ -43,9 +43,14 @@ def sort_panels_by_column_then_row(items, rtl_order: bool) -> list:
     # Step 3: find split_x using remaining panels
     remaining.sort(key=lambda d: d[1])  # sort by x_center
     x_centers = [d[1] for d in remaining]
-    gaps = [(x_centers[i + 1] - x_centers[i], i) for i in range(len(x_centers) - 1)]
-    split_idx = max(gaps, key=lambda g: g[0])[1] if gaps else 0
-    split_x = (x_centers[split_idx] + x_centers[split_idx + 1]) / 2
+
+    # fallback: if only one panel remains, split_x = its center
+    if len(x_centers) < 2:
+        split_x = x_centers[0]  # just use the only x_center
+    else:
+        gaps = [(x_centers[i + 1] - x_centers[i], i) for i in range(len(x_centers) - 1)]
+        split_idx = max(gaps, key=lambda g: g[0])[1]
+        split_x = (x_centers[split_idx] + x_centers[split_idx + 1]) / 2
 
     # Step 4: divide remaining into left/right
     left_group = [d for d in remaining if d[1] < split_x]
