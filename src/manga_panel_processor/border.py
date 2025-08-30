@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from typing import Tuple
 
 # Ensure the thinning function is available
 try:
@@ -73,9 +74,45 @@ def remove_border(panel_image: np.ndarray,
     Returns:
     - The cropped panel image, or the original if processing fails.
     """
+    cropped, _ = extract_panel_content(panel_image, search_zone_ratio, padding)
+        
+    return cropped
+
+# --- Define Type Aliases for clarity ---
+# Create an alias for the coordinate tuple
+Coordinate = Tuple[int, int, int, int]
+
+# Create an alias for the function's full return type
+PanelContent = Tuple[np.ndarray, Coordinate]
+
+def extract_panel_content(panel_image: np.ndarray, 
+                  search_zone_ratio: float = 0.25, 
+                  padding: int = 5) -> PanelContent:
+    """
+    Removes borders and returns the content area along with its coordinates.
+    This definitive version accurately finds the innermost border line by reducing
+    all contour lines to a single-pixel width, eliminating thickness bias from
+    speech bubble intersections.
+
+    Parameters:
+    - panel_image: The input panel image.
+    - search_zone_ratio: The percentage of the panel's width/height from the edge
+                         to define the search area for a border (e.g., 0.25 = 25%).
+    - padding: Pixels to add inside the final detected border to avoid clipping art.
+
+    Returns:
+    - A tuple containing:
+        - The cropped panel image (np.ndarray).
+        - The coordinates of the cropped area relative to the original panel_image
+          in (x, y, w, h) format.
+      If processing fails, returns the original image and coordinates covering the full image.
+    """
+    # Get original dimensions for fallback returns
+    h_orig, w_orig, _ = panel_image.shape
+
     # Return original image if it's invalid or too small to process
-    if panel_image is None or panel_image.shape[0] < 30 or panel_image.shape[1] < 30:
-        return panel_image
+    if panel_image is None or h_orig < 30 or w_orig < 30:
+        return panel_image, (0, 0, w_orig, h_orig)
 
     # --- 1. Preparation ---
     # Add a safe, white border to separate the panel's border from the image edge
@@ -94,7 +131,7 @@ def remove_border(panel_image: np.ndarray,
 
     # If no contours are found, there's nothing to process
     if not contours:
-        return panel_image
+        return panel_image, (0, 0, w_orig, h_orig)
 
     # The largest contour is almost always the panel we want
     largest_contour = max(contours, key=cv2.contourArea)
@@ -149,13 +186,30 @@ def remove_border(panel_image: np.ndarray,
     
     # If the calculated coordinates are invalid, return the original image
     if final_x1 >= final_x2 or final_y1 >= final_y2: 
-        return panel_image
+        return panel_image, (0, 0, w_orig, h_orig)
         
     # Crop the final result from the padded image
     cropped = padded_image[final_y1:final_y2, final_x1:final_x2]
     
     # Perform a final check to ensure the cropped image is not too small
     if cropped.shape[0] < 10 or cropped.shape[1] < 10: 
-        return panel_image
+        return panel_image, (0, 0, w_orig, h_orig)
+    
+    # Calculate coordinates relative to the ORIGINAL panel_image
+    # We subtract the padding that was initially added.
+    content_x = final_x1 - pad_size
+    content_y = final_y1 - pad_size
+    content_w = final_x2 - final_x1
+    content_h = final_y2 - final_y1
+
+    # Clamp values to be within the original image's bounds to prevent errors
+    content_x = max(0, content_x)
+    content_y = max(0, content_y)
+    if content_x + content_w > w_orig:
+        content_w = w_orig - content_x
+    if content_y + content_h > h_orig:
+        content_h = h_orig - content_y
         
-    return cropped
+    content_coords = (content_x, content_y, content_w, content_h)
+        
+    return cropped, content_coords

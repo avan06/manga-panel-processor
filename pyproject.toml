@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 [project]
 # This is the name used for `pip install` (kebab-case is common)
 name = "manga-panel-processor"
-version = "0.2.2"
+version = "0.3"
 authors = [
   { name="avan" },
 ]
